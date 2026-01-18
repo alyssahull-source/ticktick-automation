@@ -1,0 +1,13 @@
+name: Keep Repo Alive
+
+on:
+  schedule:
+    - cron: '0 0 1 * *' # once a month
+  workflow_dispatch:
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Keep repo active
+        run: echo "Keeping repo active so scheduled workflows continue running"
