@@ -47,10 +47,14 @@ app.get('/oauth/callback', async (req, res) => {
       }
     )
 
-    fs.writeFileSync(
-      'token.json',
-      JSON.stringify(tokenResponse.data, null, 2)
-    )
+console.log('SAVE THIS TOKEN:', tokenResponse.data.access_token)
+
+res.send(`
+  Authorization successful.<br><br>
+  Copy this token and add it to Render:<br><br>
+  <code>${tokenResponse.data.access_token}</code>
+`)
+
 
     console.log('OAuth token saved')
     res.send('Authorization successful! You can close this tab.')

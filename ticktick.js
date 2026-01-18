@@ -2,18 +2,13 @@ const axios = require('axios')
 const fs = require('fs')
 
 function getAccessToken() {
-  if (!fs.existsSync('token.json')) {
-    throw new Error('TickTick not authorized yet. Visit /oauth/login')
+  if (!process.env.TICKTICK_ACCESS_TOKEN) {
+    throw new Error(
+      'TickTick access token missing. Set TICKTICK_ACCESS_TOKEN in Render.'
+    )
   }
 
-  const raw = fs.readFileSync('token.json', 'utf8')
-  const data = JSON.parse(raw)
-
-  if (!data.access_token) {
-    throw new Error('Invalid TickTick token.json')
-  }
-
-  return data.access_token
+  return process.env.TICKTICK_ACCESS_TOKEN
 }
 
 
