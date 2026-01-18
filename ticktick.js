@@ -51,6 +51,7 @@ async function createTask(task) {
   const client = createClient()
 
   const payload = {
+    projectId: process.env.TICKTICK_DEFAULT_PROJECT_ID,
     title: task.title,
     content: task.description || '',
     priority: task.priority || 0
