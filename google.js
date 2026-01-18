@@ -111,12 +111,13 @@ async function listAllTickTickEvents() {
 
   const res = await calendar.events.list({
     calendarId: process.env.GOOGLE_TICKTICK_CALENDAR_ID,
-    privateExtendedProperty: 'ticktickTaskId',
-    maxResults: 2500
+    maxResults: 2500,
+    singleEvents: true
   })
 
   return res.data.items || []
 }
+
 
 async function deleteEvent(eventId) {
   const auth = getAuthorizedClient()
