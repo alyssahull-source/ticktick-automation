@@ -140,20 +140,21 @@ app.post('/webhook', async (req, res) => {
 
 const { syncPriorityFiveTasks } = require('./sync')
 
-if (process.argv.includes('--sync')) {
-  (async () => {
-    try {
-      console.log('Starting TickTick → Google sync (priority 5)');
-      await syncPriorityFiveTasks();
-      console.log('Sync completed successfully');
-      process.exit(0);
-    } catch (err) {
-      console.error('Sync failed:', err);
-      process.exit(1);
-    }
-  })();
-}
+app.post('/sync/ticktick', async (req, res) => {
+  const authHeader = req.headers.authorization
+  if (authHeader !== `Bearer ${process.env.SYNC_SECRET}`) {
+    return res.status(401).json({ error: 'Unauthorized' })
+  }
 
+  try {
+    console.log('External sync triggered')
+    await syncPriorityFiveTasks()
+    res.json({ success: true })
+  } catch (err) {
+    console.error('Sync failed:', err)
+    res.status(500).json({ error: 'Sync failed' })
+  }
+})
 
 // --------------------
 const PORT = process.env.PORT || 3000
