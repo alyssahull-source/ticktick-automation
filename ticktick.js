@@ -1,5 +1,13 @@
 const axios = require('axios')
 
+const ticktick = axios.create({
+  baseURL: 'https://api.ticktick.com/open/v1',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
+
+
 function getAccessToken() {
   const token = process.env.TICKTICK_ACCESS_TOKEN
 
@@ -80,13 +88,14 @@ async function completeTask(projectId, taskId) {
 }
 
 async function getAllTasks() {
-  const res = await axios.get('/task', {
+  const res = await ticktick.get('/task', {
     params: {
       projectId: 'all',
     },
   })
   return res.data
 }
+
 
 
 module.exports = {
