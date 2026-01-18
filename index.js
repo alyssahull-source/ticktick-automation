@@ -17,7 +17,7 @@ const actions = require('./actions')
 // --------------------
 app.get('/oauth/login', (req, res) => {
   const clientId = process.env.TICKTICK_CLIENT_ID
-  const redirectUri = 'http://localhost:3000/oauth/callback'
+  const redirectUri = 'https://ticktick-automation.onrender.com/oauth/callback'
 
   const authUrl =
     'https://ticktick.com/oauth/authorize' +
@@ -42,7 +42,7 @@ app.get('/oauth/callback', async (req, res) => {
           client_secret: process.env.TICKTICK_CLIENT_SECRET,
           code,
           grant_type: 'authorization_code',
-          redirect_uri: 'http://localhost:3000/oauth/callback'
+          redirect_uri: 'https://ticktick-automation.onrender.com/oauth/callback'
         }
       }
     )
