@@ -54,17 +54,15 @@ async function syncPriorityFiveTasks() {
     `Found ${activePriorityFiveTasks.length} active priority-5 tasks`
   )
 
-  /* --------------------------------
-     CREATE missing Google events
-  -------------------------------- */
-  for (const task of activePriorityFiveTasks) {
-    const existingEvent = eventByTaskId.get(task.id)
+ /* --------------------------------
+   CREATE or UPDATE Google events
+-------------------------------- */
+for (const task of activePriorityFiveTasks) {
+  const existingEvent = eventByTaskId.get(task.id)
 
-    if (existingEvent) {
-      // Optional: update due date later if you want
-      continue
-    }
+  const taskDue = new Date(task.dueDate).toISOString()
 
+  if (!existingEvent) {
     console.log(`Creating event: ${task.title}`)
 
     await googleApi.createCalendarEvent({
@@ -75,8 +73,8 @@ async function syncPriorityFiveTasks() {
 TickTick Task ID: ${task.id}
 TickTick Project ID: ${task.projectId}
 `,
-      start: { dateTime: task.dueDate },
-      end: { dateTime: task.dueDate },
+      start: { dateTime: taskDue },
+      end: { dateTime: taskDue },
       extendedProperties: {
         private: {
           ticktickTaskId: task.id,
@@ -84,7 +82,24 @@ TickTick Project ID: ${task.projectId}
         }
       }
     })
+
+    continue
   }
+
+  const existingStart = existingEvent.start?.dateTime
+
+  if (existingStart !== taskDue) {
+    console.log(
+      `Updating event date: ${task.title} (${existingStart} → ${taskDue})`
+    )
+
+    await googleApi.updateCalendarEvent(existingEvent.id, {
+      start: { dateTime: taskDue },
+      end: { dateTime: taskDue }
+    })
+  }
+}
+
 
   /* --------------------------------
      DELETE stale Google events
