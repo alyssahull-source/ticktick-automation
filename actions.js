@@ -1,4 +1,4 @@
-const ticktick = require('./ticktick')
+//const ticktick = require('./ticktick')
 const googleApi = require('./google')
 
 function toGoogleDateTime(date) {
@@ -30,14 +30,14 @@ function toGoogleDateTime(isoString) {   // FIX #2
 
 const actions = {
   laundry: async () => {
-    const response = await ticktick.createTask({
+  //  const response = await ticktick.createTask({
       title: 'Move laundry',
       dueDate: oneHourFromNow(),
       priority: 3
     })
 
     const taskId = response.data.id
-    await ticktick.addReminder(taskId, 'TRIGGER:PT0S')
+//    await ticktick.addReminder(taskId, 'TRIGGER:PT0S')
   },
 
   voicemail: async (payload) => {
@@ -99,6 +99,6 @@ const actions = {
       priority: 3
     })
   }
-}
+//}
 
-module.exports = actions
+//module.exports = actions

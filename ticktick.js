@@ -1,19 +1,12 @@
 const axios = require('axios')
-const fs = require('fs')
 
 function getAccessToken() {
-  if (!process.env.TICKTICK_ACCESS_TOKEN) {
-    throw new Error(
-      'TickTick access token missing. Set TICKTICK_ACCESS_TOKEN in Render.'
-    )
+  const token = process.env.TICKTICK_ACCESS_TOKEN
+  if (!token) {
+    throw new Error('TickTick access token missing')
   }
-
-  return process.env.TICKTICK_ACCESS_TOKEN
+  return token
 }
-
-
-
-
 
 function createClient() {
   return axios.create({
@@ -24,6 +17,7 @@ function createClient() {
     }
   })
 }
+
 
 function formatTickTickDate(date) {
   if (!date) return null

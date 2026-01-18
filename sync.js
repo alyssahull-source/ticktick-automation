@@ -1,5 +1,5 @@
 const fs = require('fs')
-const ticktick = require('./ticktick')
+// const ticktick = require('./ticktick')
 const googleApi = require('./google')
 
 const SYNC_FILE = 'synced.json'
