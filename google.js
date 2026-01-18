@@ -19,9 +19,11 @@ function getAuthUrl() {
 
   return oauth2Client.generateAuthUrl({
     access_type: 'offline',
+    prompt: 'consent',
     scope: ['https://www.googleapis.com/auth/calendar']
   })
 }
+
 
 function saveToken(token) {
   fs.writeFileSync('google-token.json', JSON.stringify(token, null, 2))
@@ -30,14 +32,19 @@ function saveToken(token) {
 function getAuthorizedClient() {
   const oauth2Client = getOAuthClient()
 
+  if (!fs.existsSync('google-token.json')) {
+    throw new Error(
+      'Google not authorized yet. Visit /google/login to connect.'
+    )
+  }
+
   const raw = fs.readFileSync('google-token.json', 'utf8')
-  if (!raw) throw new Error('Missing Google token')
-
   const token = JSON.parse(raw)
-  oauth2Client.setCredentials(token)
 
+  oauth2Client.setCredentials(token)
   return oauth2Client
 }
+
 
 
 async function createCalendarEvent(event) {
