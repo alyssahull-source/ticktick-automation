@@ -84,10 +84,23 @@ async function findEventByTickTickId(ticktickTaskId) {
   return res.data.items?.[0] || null
 }
 
+async function updateCalendarEvent(eventId, updatedFields) {
+  const auth = getAuthorizedClient()
+  const calendar = google.calendar({ version: 'v3', auth })
+
+  return calendar.events.patch({
+    calendarId: process.env.GOOGLE_TICKTICK_CALENDAR_ID,
+    eventId,
+    requestBody: updatedFields
+  })
+}
+
+
 module.exports = {
   getAuthUrl,
   saveToken,
   createCalendarEvent,
+  updateCalendarEvent,
   getEventById,
   findEventByTickTickId
 }

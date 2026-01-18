@@ -23,28 +23,11 @@ async function syncPriorityFiveTasks() {
   console.log(`Found ${priorityFiveTasks.length} priority-5 tasks`)
 
   for (const task of priorityFiveTasks) {
-    if (!task.id) {
-      console.warn('Skipping task with missing ID', task)
-      continue
-    }
-
-    if (!task.dueDate) {
-      console.log(`Skipping task with no due date: ${task.title}`)
-      continue
-    }
+    if (!task.id || !task.dueDate) continue
 
     const existingEvent = await googleApi.findEventByTickTickId(task.id)
 
-    if (existingEvent) {
-      console.log(
-        `Skipping existing Google event for TickTick task: ${task.title}`
-      )
-      continue
-    }
-
-    console.log(`Creating Google event for TickTick task: ${task.title}`)
-
-    await googleApi.createCalendarEvent({
+    const eventPayload = {
       summary: task.title,
       description: task.content || '',
       start: { dateTime: task.dueDate },
@@ -55,7 +38,31 @@ async function syncPriorityFiveTasks() {
           ticktickProjectId: task.projectId
         }
       }
-    })
+    }
+
+    if (!existingEvent) {
+      console.log(`Creating Google event: ${task.title}`)
+
+      await googleApi.createCalendarEvent(eventPayload)
+      continue
+    }
+
+    const existingDate =
+      existingEvent.start?.dateTime || existingEvent.start?.date
+
+    if (existingDate !== task.dueDate) {
+      console.log(`Updating Google event date: ${task.title}`)
+
+      await googleApi.updateCalendarEvent(
+        existingEvent.id,
+        {
+          start: { dateTime: task.dueDate },
+          end: { dateTime: task.dueDate }
+        }
+      )
+    } else {
+      console.log(`No change for task: ${task.title}`)
+    }
   }
 
   console.log('Sync completed successfully')
