@@ -82,7 +82,7 @@ async function completeTask(projectId, taskId) {
 async function getAllTasks() {
   const client = createClient()
 
-  const res = await client.get('/tasks')
+  const res = await client.get('/task')
   return res.data
 }
 
