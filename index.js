@@ -74,7 +74,7 @@ app.get('/google/callback', async (req, res) => {
     const oauth2Client = new (require('googleapis').google.auth.OAuth2)(
       process.env.GOOGLE_CLIENT_ID,
       process.env.GOOGLE_CLIENT_SECRET,
-      'http://localhost:3000/google/callback'
+      'https://ticktick-automation.onrender.com/oauth/login'
     )
 
     const { tokens } = await oauth2Client.getToken(code)
