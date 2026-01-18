@@ -88,13 +88,17 @@ async function completeTask(projectId, taskId) {
 }
 
 async function getAllTasks() {
-  const res = await ticktick.get('/task', {
+  const client = createClient()
+
+  const res = await client.get('/task', {
     params: {
       projectId: 'all',
     },
   })
+
   return res.data
 }
+
 
 
 
