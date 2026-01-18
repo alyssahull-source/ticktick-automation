@@ -71,18 +71,29 @@ async function getEventById(eventId) {
   })
 }
 
-async function findEventByTickTickId(ticktickTaskId) {
+async function findEventByTickTickId(taskId) {
   const auth = getAuthorizedClient()
   const calendar = google.calendar({ version: 'v3', auth })
 
+  console.log(`Looking up Google event by TickTick task ID: ${taskId}`)
+
   const res = await calendar.events.list({
     calendarId: process.env.GOOGLE_TICKTICK_CALENDAR_ID,
-    privateExtendedProperty: `ticktickTaskId=${ticktickTaskId}`,
+    privateExtendedProperty: `ticktickTaskId=${taskId}`,
     maxResults: 1
   })
 
-  return res.data.items?.[0] || null
+  console.log(
+    `Google lookup returned ${res.data.items?.length || 0} events`
+  )
+
+  if (res.data.items?.[0]) {
+    console.log('Found event ID:', res.data.items[0].id)
+  }
+
+  return res.data.items?.[0]
 }
+
 
 async function updateCalendarEvent(eventId, updatedFields) {
   const auth = getAuthorizedClient()
