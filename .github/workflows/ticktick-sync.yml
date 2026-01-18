@@ -8,9 +8,8 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
-
-steps:
-  - name: Trigger TickTick → Google sync
-    run: |
-      curl -X POST https://ticktick-automation.onrender.com/sync/ticktick \
-      -H "Authorization: Bearer ${{ secrets.SYNC_SECRET }}"
+    steps:
+      - name: Trigger TickTick → Google sync
+        run: |
+          curl -X POST https://ticktick-automation.onrender.com/sync/ticktick \
+          -H "Authorization: Bearer ${{ secrets.SYNC_SECRET }}"
