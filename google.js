@@ -1,5 +1,4 @@
 const { google } = require('googleapis')
-const fs = require('fs')
 
 const REDIRECT_URI = 'https://ticktick-automation.onrender.com/google/callback'
 
@@ -26,17 +25,31 @@ function getAuthUrl() {
 
 
 function saveToken(token) {
-  fs.writeFileSync('google-token.json', JSON.stringify(token, null, 2))
+  if (!token.refresh_token) {
+    console.warn('No refresh token returned from Google')
+    return
+  }
+
+  console.log('GOOGLE REFRESH TOKEN:', token.refresh_token)
 }
+
 
 function getAuthorizedClient() {
   const oauth2Client = getOAuthClient()
 
-  if (!fs.existsSync('google-token.json')) {
+  if (!process.env.GOOGLE_REFRESH_TOKEN) {
     throw new Error(
-      'Google not authorized yet. Visit /google/login to connect.'
+      'Google not authorized yet. GOOGLE_REFRESH_TOKEN missing in environment.'
     )
   }
+
+  oauth2Client.setCredentials({
+    refresh_token: process.env.GOOGLE_REFRESH_TOKEN
+  })
+
+  return oauth2Client
+}
+
 
   const raw = fs.readFileSync('google-token.json', 'utf8')
   const token = JSON.parse(raw)
@@ -68,10 +81,23 @@ async function getEventById(eventId) {
   })
 }
 
+async function findEventByTickTickId(ticktickTaskId) {
+  const auth = getAuthorizedClient()
+
+  const res = await auth.calendar.events.list({
+    calendarId: 'primary',
+    privateExtendedProperty: `ticktickTaskId=${ticktickTaskId}`,
+    maxResults: 1
+  })
+
+  return res.data.items?.[0] || null
+}
+
 
 module.exports = {
   getAuthUrl,
   saveToken,
   createCalendarEvent,
-  getEventById
+  getEventById,
+  findEventByTickTickId
 }
