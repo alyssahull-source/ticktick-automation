@@ -64,6 +64,8 @@ async function addReminder(taskId, trigger) {
     }
   ])
 }
+
+
 async function completeTask(projectId, taskId) {
   const client = createClient()
 
@@ -72,10 +74,18 @@ async function completeTask(projectId, taskId) {
   )
 }
 
+async function getAllTasks() {
+  const client = createClient()
+
+  const res = await client.get('/tasks')
+  return res.data
+}
 
 module.exports = {
   createTask,
+  completeTask,
   addReminder,
-  completeTask
+  getAllTasks
 }
+
 

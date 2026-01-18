@@ -1,5 +1,11 @@
 const ticktick = require('./ticktick')
-const googleApi = require('./google')   // FIX #1
+const googleApi = require('./google')
+
+function toGoogleDateTime(date) {
+  return {
+    dateTime: new Date(date).toISOString()
+  }
+}
 
 function oneHourFromNow() {
   return new Date(Date.now() + 60 * 60 * 1000).toISOString()
