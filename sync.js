@@ -43,17 +43,23 @@ async function syncPriorityFiveTasks() {
     console.log(`Creating event: ${task.title}`)
 
     await googleApi.createCalendarEvent({
-      summary: task.title,
-      description: task.content || '',
-      start: { dateTime: task.dueDate },
-      end: { dateTime: task.dueDate },
-      extendedProperties: {
-        private: {
-          ticktickTaskId: task.id,
-          ticktickProjectId: task.projectId
-        }
-      }
-    })
+  summary: task.title,
+  description: `${task.content || ''}
+
+---
+TickTick Task ID: ${task.id}
+TickTick Project ID: ${task.projectId}
+`,
+  start: { dateTime: task.dueDate },
+  end: { dateTime: task.dueDate },
+  extendedProperties: {
+    private: {
+      ticktickTaskId: task.id,
+      ticktickProjectId: task.projectId
+    }
+  }
+})
+
   }
 
   /* -------------------------------
