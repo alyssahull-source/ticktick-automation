@@ -54,7 +54,7 @@ async function syncPriorityFiveTasks() {
     `Found ${activePriorityFiveTasks.length} active priority-5 tasks`
   )
 
- /* --------------------------------
+/* --------------------------------
    CREATE or UPDATE Google events
 -------------------------------- */
 for (const task of activePriorityFiveTasks) {
@@ -62,17 +62,19 @@ for (const task of activePriorityFiveTasks) {
 
   const taskDue = new Date(task.dueDate).toISOString()
 
+  const expectedDescription = `${task.content || ''}
+
+---
+TickTick Task ID: ${task.id}
+TickTick Project ID: ${task.projectId}
+`
+
   if (!existingEvent) {
     console.log(`Creating event: ${task.title}`)
 
     await googleApi.createCalendarEvent({
       summary: task.title,
-      description: `${task.content || ''}
-
----
-TickTick Task ID: ${task.id}
-TickTick Project ID: ${task.projectId}
-`,
+      description: expectedDescription,
       start: { dateTime: taskDue },
       end: { dateTime: taskDue },
       extendedProperties: {
@@ -86,19 +88,30 @@ TickTick Project ID: ${task.projectId}
     continue
   }
 
-  const existingStart = existingEvent.start?.dateTime
+  const updates = {}
 
-  if (existingStart !== taskDue) {
-    console.log(
-      `Updating event date: ${task.title} (${existingStart} → ${taskDue})`
-    )
+  // Title changed
+  if (existingEvent.summary !== task.title) {
+    updates.summary = task.title
+  }
 
-    await googleApi.updateCalendarEvent(existingEvent.id, {
-      start: { dateTime: taskDue },
-      end: { dateTime: taskDue }
-    })
+  // Description changed
+  if ((existingEvent.description || '') !== expectedDescription) {
+    updates.description = expectedDescription
+  }
+
+  // Due date changed
+  if (existingEvent.start?.dateTime !== taskDue) {
+    updates.start = { dateTime: taskDue }
+    updates.end = { dateTime: taskDue }
+  }
+
+  if (Object.keys(updates).length > 0) {
+    console.log(`Updating event: ${task.title}`)
+    await googleApi.updateCalendarEvent(existingEvent.id, updates)
   }
 }
+
 
 
   /* --------------------------------
