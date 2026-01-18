@@ -47,18 +47,17 @@ app.get('/oauth/callback', async (req, res) => {
       }
     )
 
-    // 🔴 TEMP: log the token so you can copy it
-    console.log('TICKTICK TOKEN RESPONSE:', tokenResponse.data)
+    // 🚨 DO NOT write files
+    // 🚨 DO NOT import ticktick.js
+    // 🚨 DO NOT do anything else
 
-    res.json({
-      message: 'TickTick authorized',
-      token: tokenResponse.data
-    })
+    return res.status(200).json(tokenResponse.data)
   } catch (err) {
-    console.error('OAuth error:', err.response?.data || err.message)
-    res.status(500).send('OAuth failed')
+    console.error('TickTick OAuth error:', err.response?.data || err.message)
+    return res.status(500).send('OAuth failed')
   }
 })
+
 
 
 // --------------------
