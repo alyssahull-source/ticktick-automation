@@ -1,5 +1,7 @@
-const { getProjectWithData, completeTask } = require('./ticktick')
+const { getProjectWithData, completeTask, updateTaskContent } = require('./ticktick')
 const googleApi = require('./google')
+
+const SYNC_MARKER = '[Synced to Google Calendar]'
 
 async function syncPriorityFiveTasks() {
   console.log('Running TickTick → Google sync')
@@ -62,23 +64,31 @@ async function syncPriorityFiveTasks() {
   /* --------------------------------
      GOOGLE → TICKTICK (Delete → Complete)
   -------------------------------- */
-  for (const task of activePriorityFiveTasks) {
-    const existingEvent = eventByTaskId.get(task.id)
-    if (existingEvent) continue
+for (const task of activePriorityFiveTasks) {
+  const existingEvent = eventByTaskId.get(task.id)
+  if (existingEvent) continue
 
-    console.log(
-      `Google event missing for task "${task.title}" — completing TickTick task`
-    )
+  const wasPreviouslySynced =
+    task.content?.includes(SYNC_MARKER)
 
-    if (process.env.DRY_RUN === 'true') {
-      console.log(`[DRY RUN] Would complete TickTick task ${task.id}`)
-    } else {
-      await completeTask(task.projectId, task.id)
-    }
-
-    // Prevent recreation in this run
-    expectedTaskIds.delete(task.id)
+  if (!wasPreviouslySynced) {
+    // Brand-new task, never synced — do NOT complete
+    continue
   }
+
+  console.log(
+    `Google event missing for task "${task.title}" — completing TickTick task`
+  )
+
+  if (process.env.DRY_RUN === 'true') {
+    console.log(`[DRY RUN] Would complete TickTick task ${task.id}`)
+  } else {
+    await completeTask(task.projectId, task.id)
+  }
+
+  expectedTaskIds.delete(task.id)
+}
+
 
   /* --------------------------------
      CREATE or UPDATE Google events
@@ -112,6 +122,19 @@ TickTick Project ID: ${task.projectId}
           }
         }
       })
+
+      if (!task.content?.includes(SYNC_MARKER)) {
+  const updatedContent = `${task.content || ''}
+
+${SYNC_MARKER}`
+
+  await updateTaskContent(
+    task.projectId,
+    task.id,
+    updatedContent
+  )
+}
+
 
       continue
     }

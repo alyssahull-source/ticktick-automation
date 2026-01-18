@@ -103,6 +103,16 @@ async function getProjectWithData(projectId) {
   }
 }
 
+async function updateTaskContent(projectId, taskId, content) {
+  const client = createClient()
+
+  return client.post(
+    `/project/${projectId}/task/${taskId}`,
+    {
+      content
+    }
+  )
+}
 
 
 
@@ -110,6 +120,7 @@ module.exports = {
   createTask,
   completeTask,
   addReminder,
+  updateTaskContent,
   getProjectWithData
 }
 
