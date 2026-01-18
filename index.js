@@ -148,7 +148,7 @@ app.listen(PORT, () => {
 const { syncPriorityFiveTasks } = require('./sync')
 
 // Run once at startup
-// syncPriorityFiveTasks()
+ syncPriorityFiveTasks()
 
 // Then every 5 minutes
-// setInterval(syncPriorityFiveTasks, 5 * 60 * 1000)
+ setInterval(syncPriorityFiveTasks, 5 * 60 * 1000)
