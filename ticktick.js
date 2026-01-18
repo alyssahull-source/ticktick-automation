@@ -106,12 +106,10 @@ async function getProjectWithData(projectId) {
 async function updateTaskContent(projectId, taskId, content) {
   const client = createClient()
 
-  return client.post(
-    `/project/${projectId}/task/${taskId}`,
-    {
-      content
-    }
-  )
+  return client.post(`/task/${taskId}`, {
+    projectId,
+    content
+  })
 }
 
 
