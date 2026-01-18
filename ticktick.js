@@ -87,17 +87,26 @@ async function completeTask(projectId, taskId) {
   )
 }
 
-async function getAllTasks() {
+async function getAllProjects() {
   const client = createClient()
-
-  const res = await client.get('/task', {
-    params: {
-      projectId: 'all',
-    },
-  })
-
+  const res = await client.get('/project')
   return res.data
 }
+
+async function getAllTasks() {
+  const client = createClient()
+  const projects = await getAllProjects()
+
+  const allTasks = []
+
+  for (const project of projects) {
+    const res = await client.get(`/project/${project.id}/task`)
+    allTasks.push(...res.data)
+  }
+
+  return allTasks
+}
+
 
 
 
