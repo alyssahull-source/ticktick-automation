@@ -9,6 +9,22 @@ async function syncPriorityFiveTasks() {
     throw new Error('TICKTICK_PROJECT_IDS is not set')
   }
 
+const allEvents = await googleApi.listAllTickTickEvents()
+
+console.log(
+  `Found ${allEvents.length} Google events with TickTick metadata`
+)
+
+for (const event of allEvents) {
+  console.log(
+    'Google Event:',
+    event.id,
+    event.summary,
+    event.extendedProperties?.private
+  )
+}
+
+
   const allTasks = []
 
   for (const projectId of PROJECT_IDS) {
