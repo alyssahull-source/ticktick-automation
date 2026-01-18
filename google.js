@@ -3,6 +3,9 @@ const fs = require('fs')
 
 const REDIRECT_URI = 'https://ticktick-automation.onrender.com/google/callback'
 
+console.log('GOOGLE CLIENT ID:', process.env.GOOGLE_CLIENT_ID ? 'LOADED' : 'MISSING')
+
+
 function getOAuthClient() {
   return new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
