@@ -1,25 +1,28 @@
-const { getTasksByProject } = require('./ticktick')
+const { getProjectWithData } = require('./ticktick')
 const googleApi = require('./google')
-
-const PROJECT_ID = process.env.TICKTICK_PROJECT_ID
 
 async function syncPriorityFiveTasks() {
   console.log('Running TickTick → Google sync')
-  console.log('Using TickTick project:', PROJECT_ID)
 
+  const PROJECT_ID = process.env.TICKTICK_PROJECT_ID
   if (!PROJECT_ID) {
     throw new Error('TICKTICK_PROJECT_ID is not set')
   }
 
-  const tasks = await getTasksByProject(PROJECT_ID)
+  console.log('Using TickTick project:', PROJECT_ID)
 
-  console.log('Total tasks fetched:', tasks.length)
+  const projectData = await getProjectWithData(PROJECT_ID)
 
-  const highPriority = tasks.filter(t => t.priority === 5)
+  const tasks = projectData.tasks || []
+  console.log(`Fetched ${tasks.length} tasks from TickTick project`)
 
-  console.log('Priority 5 tasks:', highPriority.length)
+  const priorityFiveTasks = tasks.filter(
+    t => t.priority === 5 && t.status === 0
+  )
 
-  for (const task of highPriority) {
+  console.log(`Found ${priorityFiveTasks.length} priority-5 tasks`)
+
+  for (const task of priorityFiveTasks) {
     if (!task.dueDate) continue
 
     await googleApi.createCalendarEvent({
@@ -35,6 +38,8 @@ async function syncPriorityFiveTasks() {
       }
     })
   }
+
+  console.log('Sync completed successfully')
 }
 
 module.exports = { syncPriorityFiveTasks }

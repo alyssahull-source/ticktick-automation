@@ -87,33 +87,22 @@ async function completeTask(projectId, taskId) {
   )
 }
 
-
-
-async function getTasksByProject(projectId) {
-  if (!projectId) {
-    throw new Error('projectId is required')
-  }
-
+async function getProjectWithData(projectId) {
   const client = createClient()
 
-  console.log('Fetching TickTick tasks for project:', projectId)
-
   try {
-    const res = await client.get('/task', {
-      params: { projectId }
-    })
-
-    console.log('TickTick response status:', res.status)
-    console.log('TickTick tasks returned:', Array.isArray(res.data) ? res.data.length : 'unknown')
-
+    const res = await client.get(`/project/${projectId}/data`)
     return res.data
   } catch (err) {
-    console.error('TickTick project fetch failed')
-    console.error('Status:', err.response?.status)
-    console.error('Data:', err.response?.data)
+    console.error('TickTick project data fetch failed')
+    if (err.response) {
+      console.error('Status:', err.response.status)
+      console.error('Data:', err.response.data)
+    }
     throw err
   }
 }
+
 
 
 
@@ -121,8 +110,9 @@ module.exports = {
   createTask,
   completeTask,
   addReminder,
-  getTasksByProject
+  getProjectWithData
 }
+
 
 
 
