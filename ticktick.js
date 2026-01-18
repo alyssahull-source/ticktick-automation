@@ -3,20 +3,19 @@ const fs = require('fs')
 
 function getAccessToken() {
   if (!fs.existsSync('token.json')) {
-    throw new Error(
-      'TickTick not authorized yet. Visit /oauth/login to connect.'
-    )
+    throw new Error('TickTick not authorized yet. Visit /oauth/login')
   }
 
   const raw = fs.readFileSync('token.json', 'utf8')
-  const token = JSON.parse(raw)
+  const data = JSON.parse(raw)
 
-  if (!token.access_token) {
-    throw new Error('Invalid TickTick token file')
+  if (!data.access_token) {
+    throw new Error('Invalid TickTick token.json')
   }
 
-  return token.access_token
+  return data.access_token
 }
+
 
 
 
