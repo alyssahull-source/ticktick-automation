@@ -56,7 +56,7 @@ function getAuthorizedClient() {
 
   oauth2Client.setCredentials(token)
   return oauth2Client
-}
+
 
 
 
