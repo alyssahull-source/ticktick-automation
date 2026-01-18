@@ -2,11 +2,15 @@ name: TickTick → Google Sync
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '*/15 * * * *'
 
 jobs:
   sync:
     runs-on: ubuntu-latest
 
-    steps:
-      - name: Placeholder
-        run: echo "Workflow file created"
+steps:
+  - name: Trigger TickTick → Google sync
+    run: |
+      curl -X POST https://ticktick-automation.onrender.com/sync/ticktick \
+      -H "Authorization: Bearer ${{ secrets.SYNC_SECRET }}"
