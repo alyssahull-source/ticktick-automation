@@ -24,16 +24,32 @@ async function syncPriorityFiveTasks() {
 
     console.log(`Fetched ${tasks.length} tasks`)
 
-    const priorityFiveTasks = tasks.filter(
-      task => task.priority === 5 && task.status === 0
-    )
+    for (const task of tasks) {
+      if (!task.id) continue
 
-    console.log(`Found ${priorityFiveTasks.length} priority-5 tasks`)
+      const existingEvent =
+        await googleApi.findEventByTickTickId(task.id)
 
-    for (const task of priorityFiveTasks) {
-      if (!task.id || !task.dueDate) continue
+      const isCompleted = task.status !== 0
+      const isPriorityFive = task.priority === 5
+      const hasDueDate = Boolean(task.dueDate)
 
-      const existingEvent = await googleApi.findEventByTickTickId(task.id)
+      // 🚫 REMOVE EVENT CONDITIONS
+      if (
+        existingEvent &&
+        (isCompleted || !isPriorityFive || !hasDueDate)
+      ) {
+        console.log(
+          `🗑 Removing Google event for task: ${task.title}`
+        )
+        await googleApi.deleteCalendarEvent(existingEvent.id)
+        continue
+      }
+
+      // ⏭ Skip tasks that shouldn't sync
+      if (!isPriorityFive || isCompleted || !hasDueDate) {
+        continue
+      }
 
       const eventPayload = {
         summary: task.title,
@@ -48,12 +64,14 @@ async function syncPriorityFiveTasks() {
         }
       }
 
+      // ➕ CREATE
       if (!existingEvent) {
         console.log(`➕ Creating event: ${task.title}`)
         await googleApi.createCalendarEvent(eventPayload)
         continue
       }
 
+      // ✏️ UPDATE DATE IF CHANGED
       const existingDate =
         existingEvent.start?.dateTime || existingEvent.start?.date
 
