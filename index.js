@@ -138,6 +138,19 @@ app.post('/webhook', async (req, res) => {
   }
 })
 
+const { syncPriorityFiveTasks } = require('./sync')
+
+app.get('/sync/ticktick', async (req, res) => {
+  try {
+    await syncPriorityFiveTasks()
+    res.json({ success: true })
+  } catch (err) {
+    console.error('Sync failed:', err)
+    res.status(500).json({ error: 'Sync failed' })
+  }
+})
+
+
 // --------------------
 const PORT = process.env.PORT || 3000
 
