@@ -148,7 +148,14 @@ app.listen(PORT, () => {
 const { syncPriorityFiveTasks } = require('./sync')
 
 // Run once at startup
- syncPriorityFiveTasks()
+(async () => {
+  try {
+    await syncPriorityFiveTasks()
+    console.log('TickTick → Google sync completed')
+  } catch (err) {
+    console.error('Sync skipped:', err.message)
+  }
+})()
 
 // Then every 5 minutes
  setInterval(syncPriorityFiveTasks, 5 * 60 * 1000)
