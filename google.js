@@ -120,14 +120,24 @@ async function listAllTickTickEvents() {
   const auth = getAuthorizedClient()
   const calendar = google.calendar({ version: 'v3', auth })
 
-  const res = await calendar.events.list({
-    calendarId: process.env.GOOGLE_TICKTICK_CALENDAR_ID,
-    maxResults: 2500,
-    singleEvents: true
-  })
+  const events = []
+  let pageToken
 
-  return res.data.items || []
+  do {
+    const res = await calendar.events.list({
+      calendarId: process.env.GOOGLE_TICKTICK_CALENDAR_ID,
+      privateExtendedProperty: 'ticktickTaskId',
+      maxResults: 2500,
+      pageToken
+    })
+
+    events.push(...(res.data.items || []))
+    pageToken = res.data.nextPageToken
+  } while (pageToken)
+
+  return events
 }
+
 
 
 async function deleteEvent(eventId) {
