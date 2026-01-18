@@ -2,9 +2,11 @@ const axios = require('axios')
 
 function getAccessToken() {
   const token = process.env.TICKTICK_ACCESS_TOKEN
+
   if (!token) {
-    throw new Error('TickTick access token missing')
+    throw new Error('TickTick access token missing. Set TICKTICK_ACCESS_TOKEN in Render.')
   }
+
   return token
 }
 
