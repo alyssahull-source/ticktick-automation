@@ -8,7 +8,7 @@ const fs = require('fs')
 const app = express()
 app.use(express.json())
 
-const ticktick = require('./ticktick')
+//const ticktick = require('./ticktick')
 const googleApi = require('./google')
 const actions = require('./actions')
 
