@@ -30,15 +30,13 @@ function toGoogleDateTime(isoString) {   // FIX #2
 
 const actions = {
   laundry: async () => {
-    const response = await ticktick.createTask({
-      title: 'Move laundry',
-      dueDate: oneHourFromNow(),
-      priority: 3
-    })
+  await ticktick.createTask({
+    title: 'Move laundry',
+    dueDate: new Date(Date.now() + 60 * 60 * 1000),
+    priority: 3
+  })
+},
 
-    const taskId = response.data.id
-    await ticktick.addReminder(taskId, 'TRIGGER:PT0S')
-  },
 
   voicemail: async (payload) => {
     return ticktick.createTask({
