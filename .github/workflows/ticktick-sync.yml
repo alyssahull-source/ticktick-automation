@@ -11,5 +11,4 @@ jobs:
     steps:
       - name: Trigger TickTick → Google sync
         run: |
-          curl -X POST https://ticktick-automation.onrender.com/sync/ticktick \
-          -H "Authorization: Bearer ${{ secrets.SYNC_SECRET }}"
+          curl -X POST https://ticktick-automation.onrender.com/sync/ticktick -H "Authorization: Bearer 1578bf0a002d2fdd497517b8683c1d0a"
