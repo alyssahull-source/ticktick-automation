@@ -8,9 +8,9 @@ const fs = require('fs')
 const app = express()
 app.use(express.json())
 
-//const ticktick = require('./ticktick')
+const ticktick = require('./ticktick')
 const googleApi = require('./google')
-//const actions = require('./actions')
+const actions = require('./actions')
 
 // --------------------
 // TickTick OAuth
@@ -93,50 +93,50 @@ app.get('/google/callback', async (req, res) => {
 // --------------------
 // Google Calendar webhook (DELETE → complete TickTick task)
 // --------------------
-//app.post('/google/webhook', async (req, res) => {
-//  res.sendStatus(200)
-//
-  //const resourceState = req.headers['x-goog-resource-state']
-//  const eventId = req.headers['x-goog-resource-id']
+app.post('/google/webhook', async (req, res) => {
+  res.sendStatus(200)
 
- // if (resourceState !== 'deleted') return
+  const resourceState = req.headers['x-goog-resource-state']
+  const eventId = req.headers['x-goog-resource-id']
 
-//  try {
-//    const event = await googleApi.getEventById(eventId)
- //   const props = event.data.extendedProperties?.private
+  if (resourceState !== 'deleted') return
 
-   // if (!props?.ticktickTaskId || !props?.ticktickProjectId) return
+  try {
+    const event = await googleApi.getEventById(eventId)
+    const props = event.data.extendedProperties?.private
 
-//    await ticktick.completeTask(
-  //    props.ticktickProjectId,
-//      props.ticktickTaskId
-//    )
+    if (!props?.ticktickTaskId || !props?.ticktickProjectId) return
 
-//    console.log('TickTick task completed:', props.ticktickTaskId)
-//  } catch (err) {
-//    console.error('Delete sync error:', err.message)
-//  }
-//})
+    await ticktick.completeTask(
+      props.ticktickProjectId,
+      props.ticktickTaskId
+    )
+
+    console.log('TickTick task completed:', props.ticktickTaskId)
+  } catch (err) {
+    console.error('Delete sync error:', err.message)
+  }
+})
 
 // --------------------
 // Custom webhook (Tasker / Make)
 // --------------------
-//app.post('/webhook', async (req, res) => {
-//  const { action } = req.body
-//  if (!action) return res.status(400).json({ error: 'Missing action' })
-//
-//  const handler = actions[action]
-//  if (!handler)
-//    return res.status(400).json({ error: `Unknown action: ${action}` })
+app.post('/webhook', async (req, res) => {
+  const { action } = req.body
+  if (!action) return res.status(400).json({ error: 'Missing action' })
 
- // try {
-//    await handler(req.body)
-//    res.json({ success: true })
-//  } catch (err) {
-//    console.error(err.response?.data || err.message)
-//    res.status(500).json({ error: 'Action failed' })
-//  }
-//})
+  const handler = actions[action]
+  if (!handler)
+    return res.status(400).json({ error: `Unknown action: ${action}` })
+
+ try {
+    await handler(req.body)
+    res.json({ success: true })
+  } catch (err) {
+    console.error(err.response?.data || err.message)
+    res.status(500).json({ error: 'Action failed' })
+  }
+})
 
 // --------------------
 const PORT = process.env.PORT || 3000
