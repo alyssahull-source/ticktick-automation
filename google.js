@@ -126,17 +126,26 @@ async function listAllTickTickEvents() {
   do {
     const res = await calendar.events.list({
       calendarId: process.env.GOOGLE_TICKTICK_CALENDAR_ID,
-      privateExtendedProperty: 'ticktickTaskId',
       maxResults: 2500,
       pageToken
     })
 
-    events.push(...(res.data.items || []))
+    const items = res.data.items || []
+
+    // Filter locally for TickTick-linked events
+    for (const event of items) {
+      const taskId = event.extendedProperties?.private?.ticktickTaskId
+      if (taskId) {
+        events.push(event)
+      }
+    }
+
     pageToken = res.data.nextPageToken
   } while (pageToken)
 
   return events
 }
+
 
 
 
