@@ -71,10 +71,12 @@ app.get('/google/callback', async (req, res) => {
   const code = req.query.code
 
   try {
-    const oauth2Client = new (require('googleapis').google.auth.OAuth2)(
+    const { google } = require('googleapis')
+
+    const oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
       process.env.GOOGLE_CLIENT_SECRET,
-      'https://ticktick-automation.onrender.com/oauth/login'
+      'https://ticktick-automation.onrender.com/google/callback'
     )
 
     const { tokens } = await oauth2Client.getToken(code)
@@ -82,7 +84,8 @@ app.get('/google/callback', async (req, res) => {
 
     res.send('Google Calendar connected! You can close this tab.')
   } catch (err) {
-    console.error(err)
+    console.error('GOOGLE AUTH ERROR FULL:', err)
+    console.error('GOOGLE AUTH ERROR RESPONSE:', err.response?.data)
     res.status(500).send('Google auth failed')
   }
 })
