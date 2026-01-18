@@ -148,12 +148,13 @@ app.listen(PORT, () => {
 // Run once at startup
 const { syncPriorityFiveTasks } = require('./sync')
 
-;(async () => {
+app.post('/sync/ticktick', async (req, res) => {
   try {
     await syncPriorityFiveTasks()
-    console.log('TickTick → Google sync completed')
+    res.json({ success: true })
   } catch (err) {
-    console.error('TickTick → Google sync skipped:', err.message)
+    console.error('Sync error:', err.message)
+    res.status(500).json({ error: 'Sync failed' })
   }
-})()
+})
 
