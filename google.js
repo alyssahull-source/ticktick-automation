@@ -105,6 +105,29 @@ async function deleteCalendarEvent(eventId) {
   })
 }
 
+async function listAllTickTickEvents() {
+  const auth = getAuthorizedClient()
+  const calendar = google.calendar({ version: 'v3', auth })
+
+  const res = await calendar.events.list({
+    calendarId: process.env.GOOGLE_TICKTICK_CALENDAR_ID,
+    privateExtendedProperty: 'ticktickTaskId',
+    maxResults: 2500
+  })
+
+  return res.data.items || []
+}
+
+async function deleteEvent(eventId) {
+  const auth = getAuthorizedClient()
+  const calendar = google.calendar({ version: 'v3', auth })
+
+  return calendar.events.delete({
+    calendarId: process.env.GOOGLE_TICKTICK_CALENDAR_ID,
+    eventId
+  })
+}
+
 
 module.exports = {
   getAuthUrl,
@@ -113,5 +136,6 @@ module.exports = {
   updateCalendarEvent,
   getEventById,
   deleteCalendarEvent,
+  listAllTickTickEvents,
   findEventByTickTickId
 }

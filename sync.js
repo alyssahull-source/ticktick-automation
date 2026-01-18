@@ -4,90 +4,85 @@ const googleApi = require('./google')
 async function syncPriorityFiveTasks() {
   console.log('Running TickTick → Google sync')
 
-  const rawProjectIds = process.env.TICKTICK_PROJECT_IDS
-  if (!rawProjectIds) {
+  const PROJECT_IDS = process.env.TICKTICK_PROJECT_IDS?.split(',')
+  if (!PROJECT_IDS || PROJECT_IDS.length === 0) {
     throw new Error('TICKTICK_PROJECT_IDS is not set')
   }
 
-  const projectIds = rawProjectIds
-    .split(',')
-    .map(id => id.trim())
-    .filter(Boolean)
+  const allTasks = []
 
-  console.log(`Syncing ${projectIds.length} TickTick projects`)
-
-  for (const projectId of projectIds) {
-    console.log(`\n📂 Processing project: ${projectId}`)
-
+  for (const projectId of PROJECT_IDS) {
+    console.log('Fetching TickTick project:', projectId)
     const projectData = await getProjectWithData(projectId)
-    const tasks = projectData.tasks || []
+    allTasks.push(...(projectData.tasks || []))
+  }
 
-    console.log(`Fetched ${tasks.length} tasks`)
+  console.log(`Fetched ${allTasks.length} total tasks`)
 
-    for (const task of tasks) {
-      if (!task.id) continue
+  const validTasks = allTasks.filter(
+    t => t.priority === 5 && t.status === 0
+  )
 
-      const existingEvent =
-        await googleApi.findEventByTickTickId(task.id)
+  console.log(`Found ${validTasks.length} active priority-5 tasks`)
 
-      const isCompleted = task.status !== 0
-      const isPriorityFive = task.priority === 5
-      const hasDueDate = Boolean(task.dueDate)
+  const taskMap = new Map()
+  for (const task of allTasks) {
+    taskMap.set(task.id, task)
+  }
 
-      // 🚫 REMOVE EVENT CONDITIONS
-      if (
-        existingEvent &&
-        (isCompleted || !isPriorityFive || !hasDueDate)
-      ) {
-        console.log(
-          `🗑 Removing Google event for task: ${task.title}`
-        )
-        await googleApi.deleteCalendarEvent(existingEvent.id)
-        continue
-      }
+  /* -------------------------------
+     CREATE missing Google events
+  -------------------------------- */
+  for (const task of validTasks) {
+    if (!task.dueDate) continue
 
-      // ⏭ Skip tasks that shouldn't sync
-      if (!isPriorityFive || isCompleted || !hasDueDate) {
-        continue
-      }
+    const existingEvent = await googleApi.findEventByTickTickId(task.id)
 
-      const eventPayload = {
-        summary: task.title,
-        description: task.content || '',
-        start: { dateTime: task.dueDate },
-        end: { dateTime: task.dueDate },
-        extendedProperties: {
-          private: {
-            ticktickTaskId: task.id,
-            ticktickProjectId: task.projectId
-          }
+    if (existingEvent) continue
+
+    console.log(`Creating event: ${task.title}`)
+
+    await googleApi.createCalendarEvent({
+      summary: task.title,
+      description: task.content || '',
+      start: { dateTime: task.dueDate },
+      end: { dateTime: task.dueDate },
+      extendedProperties: {
+        private: {
+          ticktickTaskId: task.id,
+          ticktickProjectId: task.projectId
         }
       }
+    })
+  }
 
-      // ➕ CREATE
-      if (!existingEvent) {
-        console.log(`➕ Creating event: ${task.title}`)
-        await googleApi.createCalendarEvent(eventPayload)
-        continue
-      }
+  /* -------------------------------
+     DELETE stale Google events
+  -------------------------------- */
+  const googleEvents = await googleApi.listAllTickTickEvents()
 
-      // ✏️ UPDATE DATE IF CHANGED
-      const existingDate =
-        existingEvent.start?.dateTime || existingEvent.start?.date
+  console.log(`Checking ${googleEvents.length} Google events for cleanup`)
 
-      if (existingDate !== task.dueDate) {
-        console.log(`✏️ Updating event date: ${task.title}`)
-        await googleApi.updateCalendarEvent(existingEvent.id, {
-          start: { dateTime: task.dueDate },
-          end: { dateTime: task.dueDate }
-        })
-      } else {
-        console.log(`⏭ No change: ${task.title}`)
-      }
+  for (const event of googleEvents) {
+    const ticktickTaskId =
+      event.extendedProperties?.private?.ticktickTaskId
+
+    if (!ticktickTaskId) continue
+
+    const task = taskMap.get(ticktickTaskId)
+
+    const shouldDelete =
+      !task ||
+      task.status !== 0 ||
+      task.priority !== 5
+
+    if (shouldDelete) {
+      console.log(`Deleting event: ${event.summary}`)
+      await googleApi.deleteEvent(event.id)
     }
   }
 
-  console.log('\n✅ Sync completed successfully')
+  console.log('Sync completed successfully')
 }
 
 module.exports = { syncPriorityFiveTasks }
