@@ -31,7 +31,7 @@ function saveToken(token) {
     return
   }
 
-  console.log('GOOGLE REFRESH TOKEN:', token.refresh_token)
+  console.log('Google refresh token received and stored')
 }
 
 function getAuthorizedClient() {

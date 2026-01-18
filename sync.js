@@ -12,18 +12,37 @@ async function syncPriorityFiveTasks() {
   console.log('Using TickTick project:', PROJECT_ID)
 
   const projectData = await getProjectWithData(PROJECT_ID)
-
   const tasks = projectData.tasks || []
+
   console.log(`Fetched ${tasks.length} tasks from TickTick project`)
 
   const priorityFiveTasks = tasks.filter(
-    t => t.priority === 5 && t.status === 0
+    task => task.priority === 5 && task.status === 0
   )
 
   console.log(`Found ${priorityFiveTasks.length} priority-5 tasks`)
 
   for (const task of priorityFiveTasks) {
-    if (!task.dueDate) continue
+    if (!task.id) {
+      console.warn('Skipping task with missing ID', task)
+      continue
+    }
+
+    if (!task.dueDate) {
+      console.log(`Skipping task with no due date: ${task.title}`)
+      continue
+    }
+
+    const existingEvent = await googleApi.findEventByTickTickId(task.id)
+
+    if (existingEvent) {
+      console.log(
+        `Skipping existing Google event for TickTick task: ${task.title}`
+      )
+      continue
+    }
+
+    console.log(`Creating Google event for TickTick task: ${task.title}`)
 
     await googleApi.createCalendarEvent({
       summary: task.title,
