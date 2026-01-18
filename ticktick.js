@@ -100,7 +100,12 @@ async function getAllTasks() {
   const allTasks = []
 
   for (const project of projects) {
-    const res = await client.get(`/project/${project.id}/task`)
+    const res = await client.get('/task', {
+        params: {
+            projectId: project.id
+  }
+})
+
     allTasks.push(...res.data)
   }
 
