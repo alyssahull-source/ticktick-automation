@@ -29,10 +29,16 @@ function saveToken(token) {
 
 function getAuthorizedClient() {
   const oauth2Client = getOAuthClient()
-  const token = JSON.parse(fs.readFileSync('google-token.json'))
+
+  const raw = fs.readFileSync('google-token.json', 'utf8')
+  if (!raw) throw new Error('Missing Google token')
+
+  const token = JSON.parse(raw)
   oauth2Client.setCredentials(token)
+
   return oauth2Client
 }
+
 
 async function createCalendarEvent(event) {
   const auth = getAuthorizedClient()

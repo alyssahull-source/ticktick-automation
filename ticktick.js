@@ -2,10 +2,13 @@ const axios = require('axios')
 const fs = require('fs')
 
 function getAccessToken() {
-  const raw = fs.readFileSync('token.json')
+  const raw = fs.readFileSync('token.json', 'utf8')
+  if (!raw) throw new Error('Missing TickTick token')
+
   const data = JSON.parse(raw)
   return data.access_token
 }
+
 
 function createClient() {
   return axios.create({

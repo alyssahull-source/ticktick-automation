@@ -5,9 +5,19 @@ const googleApi = require('./google')
 const SYNC_FILE = 'synced.json'
 
 function loadSynced() {
-  if (!fs.existsSync(SYNC_FILE)) return {}
-  return JSON.parse(fs.readFileSync(SYNC_FILE))
+  try {
+    if (!fs.existsSync(SYNC_FILE)) return {}
+
+    const raw = fs.readFileSync(SYNC_FILE, 'utf8')
+    if (!raw) return {}
+
+    return JSON.parse(raw)
+  } catch (err) {
+    console.error('Failed to read synced.json, resetting:', err.message)
+    return {}
+  }
 }
+
 
 function saveSynced(data) {
   fs.writeFileSync(SYNC_FILE, JSON.stringify(data, null, 2))
