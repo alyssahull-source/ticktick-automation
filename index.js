@@ -47,22 +47,19 @@ app.get('/oauth/callback', async (req, res) => {
       }
     )
 
-console.log('SAVE THIS TOKEN:', tokenResponse.data.access_token)
+    // 🔴 TEMP: log the token so you can copy it
+    console.log('TICKTICK TOKEN RESPONSE:', tokenResponse.data)
 
-res.send(`
-  Authorization successful.<br><br>
-  Copy this token and add it to Render:<br><br>
-  <code>${tokenResponse.data.access_token}</code>
-`)
-
-
-    console.log('OAuth token saved')
-    res.send('Authorization successful! You can close this tab.')
+    res.json({
+      message: 'TickTick authorized',
+      token: tokenResponse.data
+    })
   } catch (err) {
     console.error('OAuth error:', err.response?.data || err.message)
     res.status(500).send('OAuth failed')
   }
 })
+
 
 // --------------------
 // Google OAuth
