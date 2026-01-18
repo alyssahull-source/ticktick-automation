@@ -140,15 +140,19 @@ app.post('/webhook', async (req, res) => {
 
 const { syncPriorityFiveTasks } = require('./sync')
 
-app.get('/sync/ticktick', async (req, res) => {
-  try {
-    await syncPriorityFiveTasks()
-    res.json({ success: true })
-  } catch (err) {
-    console.error('Sync failed:', err)
-    res.status(500).json({ error: 'Sync failed' })
-  }
-})
+if (process.argv.includes('--sync')) {
+  (async () => {
+    try {
+      console.log('Starting TickTick → Google sync (priority 5)');
+      await syncPriorityFiveTasks();
+      console.log('Sync completed successfully');
+      process.exit(0);
+    } catch (err) {
+      console.error('Sync failed:', err);
+      process.exit(1);
+    }
+  })();
+}
 
 
 // --------------------
@@ -157,17 +161,3 @@ const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
-
-// Run once at startup
-const { syncPriorityFiveTasks } = require('./sync')
-
-app.post('/sync/ticktick', async (req, res) => {
-  try {
-    await syncPriorityFiveTasks()
-    res.json({ success: true })
-  } catch (err) {
-    console.error('Sync error:', err.message)
-    res.status(500).json({ error: 'Sync failed' })
-  }
-})
-
