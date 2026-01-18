@@ -95,6 +95,16 @@ async function updateCalendarEvent(eventId, updatedFields) {
   })
 }
 
+async function deleteCalendarEvent(eventId) {
+  const auth = getAuthorizedClient()
+  const calendar = google.calendar({ version: 'v3', auth })
+
+  await calendar.events.delete({
+    calendarId: process.env.GOOGLE_TICKTICK_CALENDAR_ID,
+    eventId
+  })
+}
+
 
 module.exports = {
   getAuthUrl,
@@ -102,5 +112,6 @@ module.exports = {
   createCalendarEvent,
   updateCalendarEvent,
   getEventById,
+  deleteCalendarEvent,
   findEventByTickTickId
 }
