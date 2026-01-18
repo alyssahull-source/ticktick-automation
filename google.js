@@ -1,7 +1,7 @@
 const { google } = require('googleapis')
 const fs = require('fs')
 
-const REDIRECT_URI = 'http://localhost:3000/google/callback'
+const REDIRECT_URI = 'https://ticktick-automation.onrender.com/google/callback'
 
 function getOAuthClient() {
   return new google.auth.OAuth2(
