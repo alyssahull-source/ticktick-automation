@@ -2,7 +2,8 @@ const {
   getProjectWithData,
   completeTask,
   updateTaskContent,
-  updateTaskDueDate
+  updateTaskDueDate,
+  toTickTickDate
 } = require('./ticktick')
 
 const googleApi = require('./google')

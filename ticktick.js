@@ -66,7 +66,7 @@ async function createTask(task) {
   return client.post('/task', payload)
 }
 
-function toTickTickDate(isoDate, timeZone = 'America/Chicago') {
+async function toTickTickDate(isoDate, timeZone = 'America/Chicago') {
   const d = new Date(isoDate)
 
   const pad = n => String(n).padStart(2, '0')
@@ -172,6 +172,7 @@ module.exports = {
   addReminder,
   updateTaskContent,
   updateTaskDueDate,
+  toTickTickDate,
   getProjectWithData
 }
 
