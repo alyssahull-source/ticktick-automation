@@ -112,15 +112,36 @@ async function updateTaskContent(projectId, taskId, content) {
   })
 }
 
-async function updateTaskDueDate(projectId, taskId, dueDate) {
+//async function updateTaskDueDate(projectId, taskId, dueDate) {
+//  const client = createClient()
+
+//  return client.post(`/task/${taskId}`, {
+//    projectId,
+//    dueDate }
+//  )
+//}
+
+async function updateTaskDueDate(projectId, taskId, isoDate) {
   const client = createClient()
 
-  return client.post(`/task/${taskId}`, {
+  console.log('[TickTick] Updating due date', {
     projectId,
-    dueDate }
-  )
-}
+    taskId,
+    isoDate
+  })
 
+  const res = await client.post(
+    `/project/${projectId}/task/${taskId}`,
+    {
+      dueDate: isoDate
+    }
+  )
+
+  console.log('[TickTick] Update response status:', res.status)
+  console.log('[TickTick] Update response data:', res.data)
+
+  return res.data
+}
 
 
 module.exports = {
