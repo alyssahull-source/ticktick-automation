@@ -46,17 +46,6 @@ async function syncPriorityFiveTasks() {
     taskById.set(task.id, task)
   }
 
-if (allTasks.length > 0) {
-  const t = allTasks[0]
-  console.log('Sample TickTick task timestamps:', {
-    title: t.title,
-    dueDate: t.dueDate,
-    modifiedTime: t.modifiedTime,
-    completedTime: t.completedTime,
-    createdTime: t.createdTime,
-    status: t.status
-  })
-}
 
   
   /* --------------------------------
@@ -136,7 +125,9 @@ TickTick Project ID: ${task.projectId}
         private: {
           ticktickTaskId: task.id,
           ticktickProjectId: task.projectId,
-          managedBy: 'ticktick-sync'
+          managedBy: 'ticktick-sync',
+          lastSyncedFrom: 'ticktick'
+
         }
       }
     })
@@ -155,79 +146,72 @@ ${SYNC_MARKER}`
 
     continue
   }
+/* --------------------------------
+   UPDATE logic (bidirectional, marker-based)
+-------------------------------- */
+const updates = {}
 
-  /* --------------------------------
-     UPDATE logic (bidirectional)
-  -------------------------------- */
-  const updates = {}
+// Title changed in TickTick → update Google
+if (existingEvent.summary !== task.title) {
+  updates.summary = task.title
+}
 
-  if (existingEvent.summary !== task.title) {
-    updates.summary = task.title
+// Description changed in TickTick → update Google
+if ((existingEvent.description || '') !== expectedDescription) {
+  updates.description = expectedDescription
+}
+
+const googleDue = existingEvent.start?.dateTime
+const lastSyncedFrom =
+  existingEvent.extendedProperties?.private?.lastSyncedFrom
+
+/* --------------------------------
+   GOOGLE → TICKTICK (manual move)
+-------------------------------- */
+if (googleDue && googleDue !== taskDue && lastSyncedFrom !== 'ticktick') {
+  console.log(
+    `Google event moved → updating TickTick due date: ${task.title}`
+  )
+
+  if (process.env.DRY_RUN === 'true') {
+    console.log(
+      `[DRY RUN] Would update TickTick due date to ${googleDue}`
+    )
+  } else {
+    await updateTaskDueDate(
+      task.projectId,
+      task.id,
+      googleDue
+    )
   }
 
-  if ((existingEvent.description || '') !== expectedDescription) {
-    updates.description = expectedDescription
-  }
+  // IMPORTANT: stop here to prevent bounce-back
+  continue
+}
 
-  const googleDue = existingEvent.start?.dateTime
-  const managedBySync =
-    existingEvent.extendedProperties?.private?.managedBy === 'ticktick-sync'
+/* --------------------------------
+   TICKTICK → GOOGLE (authoritative)
+-------------------------------- */
+if (googleDue !== taskDue) {
+  updates.start = { dateTime: taskDue }
+  updates.end = { dateTime: taskDue }
+}
 
-  if (googleDue && googleDue !== taskDue && managedBySync) {
-    const googleUpdated = new Date(existingEvent.updated)
-    const ticktickUpdated = new Date(task.modifiedTime)
-
-    if (googleUpdated > ticktickUpdated) {
-      console.log(
-        `Updating TickTick due date from Google: ${task.title}`
-      )
-
-      if (process.env.DRY_RUN === 'true') {
-        console.log(
-          `[DRY RUN] Would update TickTick due date to ${googleDue}`
-        )
-      } else {
-        await updateTaskDueDate(
-          task.projectId,
-          task.id,
-          googleDue
-        )
-      }
-    } else {
-      updates.start = { dateTime: taskDue }
-      updates.end = { dateTime: taskDue }
+// Stamp source-of-truth marker
+if (Object.keys(updates).length > 0) {
+  updates.extendedProperties = {
+    private: {
+      ...existingEvent.extendedProperties?.private,
+      managedBy: 'ticktick-sync',
+      lastSyncedFrom: 'ticktick'
     }
   }
 
-  if (Object.keys(updates).length > 0) {
-    console.log(`Updating event: ${task.title}`)
-    await googleApi.updateCalendarEvent(existingEvent.id, updates)
-  }
+  console.log(`Updating event: ${task.title}`)
+  await googleApi.updateCalendarEvent(existingEvent.id, updates)
 }
 
-  /* --------------------------------
-     DELETE stale Google events
-  -------------------------------- */
-  console.log(`Checking ${googleEvents.length} Google events for cleanup`)
-
-  for (const event of googleEvents) {
-    const taskId = event.extendedProperties?.private?.ticktickTaskId
-    if (!taskId) continue
-
-    const task = taskById.get(taskId)
-
-    const shouldDelete =
-      !task ||
-      task.status !== 0 ||
-      task.priority !== 5
-
-    if (shouldDelete) {
-      console.log(`Deleting event: ${event.summary}`)
-      await googleApi.deleteEvent(event.id)
-    }
-  }
-
-  console.log('Sync completed successfully')
 }
 
+}
 module.exports = { syncPriorityFiveTasks }
