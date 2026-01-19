@@ -196,7 +196,7 @@ ${SYNC_MARKER}`
         await updateTaskDueDate(
           task.projectId,
           task.id,
-          googleDue
+          toTickTickDate(googleDue, task.timeZone || 'America/Chicago')
         )
       }
 

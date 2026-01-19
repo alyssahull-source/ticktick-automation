@@ -66,6 +66,28 @@ async function createTask(task) {
   return client.post('/task', payload)
 }
 
+function toTickTickDate(isoDate, timeZone = 'America/Chicago') {
+  const d = new Date(isoDate)
+
+  const pad = n => String(n).padStart(2, '0')
+
+  // Convert to local time
+  const local = new Date(
+    d.toLocaleString('en-US', { timeZone })
+  )
+
+  const offsetMinutes = -local.getTimezoneOffset()
+  const sign = offsetMinutes >= 0 ? '+' : '-'
+  const hours = pad(Math.floor(Math.abs(offsetMinutes) / 60))
+  const minutes = pad(Math.abs(offsetMinutes) % 60)
+
+  return (
+    `${local.getFullYear()}-${pad(local.getMonth() + 1)}-${pad(local.getDate())}` +
+    `T${pad(local.getHours())}:${pad(local.getMinutes())}:00.000` +
+    `${sign}${hours}${minutes}`
+  )
+}
+
 
 
 async function addReminder(taskId, trigger) {
