@@ -46,7 +46,7 @@ laundry: async () => {
     projectId,
     taskId,
     dueDate,
-    ['TRIGGER:PT15M']
+    ['TRIGGER:PT0S']
   )
 
   return taskId
