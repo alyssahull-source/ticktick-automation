@@ -1,4 +1,4 @@
-const { getProjectWithData, completeTask, updateTaskContent } = require('./ticktick')
+const { getProjectWithData, completeTask, updateTaskContent , updateTaskDueDate} = require('./ticktick')
 const googleApi = require('./google')
 
 const SYNC_MARKER = '[Synced to Google Calendar]'
