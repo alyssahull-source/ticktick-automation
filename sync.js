@@ -61,6 +61,17 @@ async function syncPriorityFiveTasks() {
     activePriorityFiveTasks.map(t => t.id)
   )
 
+  console.log(
+  'Sample TickTick task timestamps:',
+  {
+    title: tasks[0].title,
+    dueDate: tasks[0].dueDate,
+    modifiedTime: tasks[0].modifiedTime,
+    completedTime: tasks[0].completedTime
+  }
+)
+
+
   /* --------------------------------
      GOOGLE → TICKTICK (Delete → Complete)
   -------------------------------- */
