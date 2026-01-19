@@ -46,6 +46,18 @@ async function syncPriorityFiveTasks() {
     taskById.set(task.id, task)
   }
 
+if (allTasks.length > 0) {
+  const t = allTasks[0]
+  console.log('Sample TickTick task timestamps:', {
+    title: t.title,
+    dueDate: t.dueDate,
+    modifiedTime: t.modifiedTime,
+    completedTime: t.completedTime,
+    status: t.status
+  })
+}
+
+  
   /* --------------------------------
      Determine active priority-5 tasks
   -------------------------------- */
@@ -61,15 +73,6 @@ async function syncPriorityFiveTasks() {
     activePriorityFiveTasks.map(t => t.id)
   )
 
-  console.log(
-  'Sample TickTick task timestamps:',
-  {
-    title: tasks[0].title,
-    dueDate: tasks[0].dueDate,
-    modifiedTime: tasks[0].modifiedTime,
-    completedTime: tasks[0].completedTime
-  }
-)
 
 
   /* --------------------------------
