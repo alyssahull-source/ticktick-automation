@@ -180,6 +180,11 @@ ${SYNC_MARKER}`
     /* --------------------------------
        GOOGLE → TICKTICK (manual move wins)
     -------------------------------- */
+    const ticktickDue = await toTickTickDate(
+  googleDue,
+  task.timeZone || 'America/Chicago'
+)
+    
     if (
       googleDue &&
       googleDue !== taskDue &&
@@ -197,8 +202,7 @@ ${SYNC_MARKER}`
         await updateTaskDueDate(
           task.projectId,
           task.id,
-          toTickTickDate(googleDue, task.timeZone || 'America/Chicago')
-        )
+          ticktickDue)
       }
 
       // Mark Google as the source of truth for this change
