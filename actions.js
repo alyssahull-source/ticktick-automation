@@ -33,7 +33,8 @@ const actions = {
   await ticktick.createTask({
     title: 'Move laundry',
     dueDate: new Date(Date.now() + 60 * 60 * 1000),
-    priority: 3
+    priority: 3,
+    reminders: ['TRIGGER:PT0S']
   })
 },
 
