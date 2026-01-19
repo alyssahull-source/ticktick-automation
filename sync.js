@@ -90,75 +90,105 @@ for (const task of activePriorityFiveTasks) {
 }
 
 
-  /* --------------------------------
-     CREATE or UPDATE Google events
-  -------------------------------- */
-  for (const task of activePriorityFiveTasks) {
-    if (!expectedTaskIds.has(task.id)) continue
+/* --------------------------------
+   CREATE or UPDATE Google events
+-------------------------------- */
+for (const task of activePriorityFiveTasks) {
+  if (!expectedTaskIds.has(task.id)) continue
 
-    const existingEvent = eventByTaskId.get(task.id)
-    const taskDue = new Date(task.dueDate).toISOString()
+  const existingEvent = eventByTaskId.get(task.id)
+  const taskDue = new Date(task.dueDate).toISOString()
 
-    const expectedDescription = `${task.content || ''}
+  const expectedDescription = `${task.content || ''}
 
 ---
 TickTick Task ID: ${task.id}
 TickTick Project ID: ${task.projectId}
 `
 
-    if (!existingEvent) {
-      console.log(`Creating event: ${task.title}`)
+  /* --------------------------------
+     CREATE Google event
+  -------------------------------- */
+  if (!existingEvent) {
+    console.log(`Creating event: ${task.title}`)
 
-      await googleApi.createCalendarEvent({
-        summary: task.title,
-        description: expectedDescription,
-        start: { dateTime: taskDue },
-        end: { dateTime: taskDue },
-        extendedProperties: {
-          private: {
-            ticktickTaskId: task.id,
-            ticktickProjectId: task.projectId,
-            managedBy: 'ticktick-sync'
-          }
+    await googleApi.createCalendarEvent({
+      summary: task.title,
+      description: expectedDescription,
+      start: { dateTime: taskDue },
+      end: { dateTime: taskDue },
+      extendedProperties: {
+        private: {
+          ticktickTaskId: task.id,
+          ticktickProjectId: task.projectId,
+          managedBy: 'ticktick-sync'
         }
-      })
+      }
+    })
 
-      if (!task.content?.includes(SYNC_MARKER)) {
-  const updatedContent = `${task.content || ''}
+    if (!task.content?.includes(SYNC_MARKER)) {
+      const updatedContent = `${task.content || ''}
 
 ${SYNC_MARKER}`
 
-  await updateTaskContent(
-    task.projectId,
-    task.id,
-    updatedContent
-  )
-}
-
-
-      continue
+      await updateTaskContent(
+        task.projectId,
+        task.id,
+        updatedContent
+      )
     }
 
-    const updates = {}
+    continue
+  }
 
-    if (existingEvent.summary !== task.title) {
-      updates.summary = task.title
-    }
+  /* --------------------------------
+     UPDATE logic (bidirectional)
+  -------------------------------- */
+  const updates = {}
 
-    if ((existingEvent.description || '') !== expectedDescription) {
-      updates.description = expectedDescription
-    }
+  if (existingEvent.summary !== task.title) {
+    updates.summary = task.title
+  }
 
-    if (existingEvent.start?.dateTime !== taskDue) {
+  if ((existingEvent.description || '') !== expectedDescription) {
+    updates.description = expectedDescription
+  }
+
+  const googleDue = existingEvent.start?.dateTime
+  const managedBySync =
+    existingEvent.extendedProperties?.private?.managedBy === 'ticktick-sync'
+
+  if (googleDue && googleDue !== taskDue && managedBySync) {
+    const googleUpdated = new Date(existingEvent.updated)
+    const ticktickUpdated = new Date(task.modifiedTime)
+
+    if (googleUpdated > ticktickUpdated) {
+      console.log(
+        `Updating TickTick due date from Google: ${task.title}`
+      )
+
+      if (process.env.DRY_RUN === 'true') {
+        console.log(
+          `[DRY RUN] Would update TickTick due date to ${googleDue}`
+        )
+      } else {
+        await updateTaskDueDate(
+          task.projectId,
+          task.id,
+          googleDue
+        )
+      }
+    } else {
       updates.start = { dateTime: taskDue }
       updates.end = { dateTime: taskDue }
     }
-
-    if (Object.keys(updates).length > 0) {
-      console.log(`Updating event: ${task.title}`)
-      await googleApi.updateCalendarEvent(existingEvent.id, updates)
-    }
   }
+
+  if (Object.keys(updates).length > 0) {
+    console.log(`Updating event: ${task.title}`)
+    await googleApi.updateCalendarEvent(existingEvent.id, updates)
+  }
+}
 
   /* --------------------------------
      DELETE stale Google events
