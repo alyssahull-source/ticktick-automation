@@ -147,7 +147,7 @@ ${SYNC_MARKER}`
     continue
   }
 /* --------------------------------
-   UPDATE logic (bidirectional, marker-based)
+   UPDATE logic (bidirectional, stable)
 -------------------------------- */
 const updates = {}
 
@@ -166,9 +166,9 @@ const lastSyncedFrom =
   existingEvent.extendedProperties?.private?.lastSyncedFrom
 
 /* --------------------------------
-   GOOGLE → TICKTICK (manual move)
+   GOOGLE → TICKTICK (manual move wins)
 -------------------------------- */
-if (googleDue && googleDue !== taskDue && lastSyncedFrom !== 'ticktick') {
+if (googleDue && googleDue !== taskDue && lastSyncedFrom !== 'google') {
   console.log(
     `Google event moved → updating TickTick due date: ${task.title}`
   )
@@ -185,19 +185,28 @@ if (googleDue && googleDue !== taskDue && lastSyncedFrom !== 'ticktick') {
     )
   }
 
-  // IMPORTANT: stop here to prevent bounce-back
+  // Mark event as Google-authoritative
+  await googleApi.updateCalendarEvent(existingEvent.id, {
+    extendedProperties: {
+      private: {
+        ...existingEvent.extendedProperties?.private,
+        managedBy: 'ticktick-sync',
+        lastSyncedFrom: 'google'
+      }
+    }
+  })
+
   continue
 }
 
 /* --------------------------------
-   TICKTICK → GOOGLE (authoritative)
+   TICKTICK → GOOGLE (only if Google didn't win)
 -------------------------------- */
 if (googleDue !== taskDue) {
   updates.start = { dateTime: taskDue }
   updates.end = { dateTime: taskDue }
 }
 
-// Stamp source-of-truth marker
 if (Object.keys(updates).length > 0) {
   updates.extendedProperties = {
     private: {
@@ -210,6 +219,7 @@ if (Object.keys(updates).length > 0) {
   console.log(`Updating event: ${task.title}`)
   await googleApi.updateCalendarEvent(existingEvent.id, updates)
 }
+
 
 }
 
