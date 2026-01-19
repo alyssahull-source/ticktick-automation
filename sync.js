@@ -53,6 +53,7 @@ if (allTasks.length > 0) {
     dueDate: t.dueDate,
     modifiedTime: t.modifiedTime,
     completedTime: t.completedTime,
+    createdTime: t.createdTime,
     status: t.status
   })
 }
