@@ -112,7 +112,29 @@ laundry: async () => {
       dueDate: todayAt(19),
       priority: 3
     })
-  }
+  },
+
+amazon: async () => {
+  const response = await ticktick.createTask({
+    title: 'Amazon Package',
+    dueDate: todayAt(19),
+    priority: 3
+  })
+
+  const taskId = response.data.id
+  const projectId = response.data.projectId
+
+  // 🔔 Apply reminder AFTER creation (reliable path)
+  await ticktick.updateTaskDueDate(
+    projectId,
+    taskId,
+    dueDate,
+    ['TRIGGER:PT0S']
+  )
+
+  return taskId
+},
+
 }
 
 module.exports = actions
