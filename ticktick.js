@@ -143,28 +143,28 @@ async function updateTaskContent(projectId, taskId, content) {
 //  )
 //}
 
-async function updateTaskDueDate(projectId, taskId, isoDate) {
-  const client = createClient()
+async function updateTaskDueDate(
+  projectId,
+  taskId,
+  isoDate,
+  reminders
+) {
+  const payload = {
+    dueDate: isoDate,
+    startDate: isoDate
+  }
 
-  console.log('[TickTick] Updating due date', {
-    projectId,
-    taskId,
-    isoDate
-  })
+  if (reminders && Array.isArray(reminders)) {
+    payload.reminders = reminders
+  }
 
-  const res = await client.post(
-    `/task/${taskId}`,
-    {
-      startDate: isoDate, 
-      dueDate: isoDate
-    }
+  return axios.post(
+    `/open/v1/task/${taskId}`,
+    payload,
+    { headers }
   )
-
-  console.log('[TickTick] Update response status:', res.status)
-  console.log('[TickTick] Update response data:', res.data)
-
-  return res.data
 }
+
 
 
 module.exports = {

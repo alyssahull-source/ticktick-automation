@@ -36,6 +36,16 @@ const actions = {
     priority: 3,
     reminders: ['TRIGGER:PT0S']
   })
+
+  const taskId = response.data.id
+
+// 🔔 Apply reminder AFTER creation
+await ticktick.updateTaskDueDate(
+  response.data.projectId,
+  taskId,
+  payload.dueDate,
+  ['TRIGGER:PT15M']
+)
 },
 
 
