@@ -29,24 +29,29 @@ function toGoogleDateTime(isoString) {   // FIX #2
 }
 
 const actions = {
-  laundry: async () => {
-  await ticktick.createTask({
+laundry: async () => {
+  const dueDate = new Date(Date.now() + 60 * 60 * 1000).toISOString()
+
+  const response = await ticktick.createTask({
     title: 'Move laundry',
-    dueDate: new Date(Date.now() + 60 * 60 * 1000),
-    priority: 3,
-    reminders: ['TRIGGER:PT0S']
+    dueDate,
+    priority: 3
   })
 
   const taskId = response.data.id
+  const projectId = response.data.projectId
 
-// 🔔 Apply reminder AFTER creation
-await ticktick.updateTaskDueDate(
-  response.data.projectId,
-  taskId,
-  payload.dueDate,
-  ['TRIGGER:PT15M']
-)
+  // 🔔 Apply reminder AFTER creation (reliable path)
+  await ticktick.updateTaskDueDate(
+    projectId,
+    taskId,
+    dueDate,
+    ['TRIGGER:PT15M']
+  )
+
+  return taskId
 },
+
 
 
   voicemail: async (payload) => {
