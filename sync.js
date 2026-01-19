@@ -22,6 +22,29 @@ function normalizeDate(dateString) {
 async function syncPriorityFiveTasks() {
   console.log('Running TickTick → Google sync')
 
+function getGoogleEventDue(event) {
+  // Timed event
+  if (event.start?.dateTime) {
+    return {
+      iso: normalizeDate(event.start.dateTime),
+      isAllDay: false
+    }
+  }
+
+  // All-day event
+  if (event.start?.date) {
+    // Use noon to avoid timezone rollbacks
+    const date = new Date(`${event.start.date}T12:00:00`)
+    return {
+      iso: normalizeDate(date.toISOString()),
+      isAllDay: true
+    }
+  }
+
+  return null
+}
+
+
   /* --------------------------------
      Load project IDs
   -------------------------------- */
@@ -170,9 +193,14 @@ ${SYNC_MARKER}`
       updates.description = expectedDescription
     }
 
-    const googleDue = existingEvent.start?.dateTime
-      ? normalizeDate(existingEvent.start.dateTime)
-      : null
+
+    const googleEventInfo = getGoogleEventDue(existingEvent)
+    const googleDue = googleEventInfo?.iso
+    const googleIsAllDay = googleEventInfo?.isAllDay
+
+    //const googleDue = existingEvent.start?.dateTime
+    //  ? normalizeDate(existingEvent.start.dateTime)
+    //  : null
 
     const lastSyncedFrom =
       existingEvent.extendedProperties?.private?.lastSyncedFrom
@@ -202,7 +230,8 @@ ${SYNC_MARKER}`
         await updateTaskDueDate(
           task.projectId,
           task.id,
-          ticktickDue)
+          ticktickDue, 
+        googleIsAllDay)
       }
 
       // Mark Google as the source of truth for this change
