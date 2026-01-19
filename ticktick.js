@@ -131,7 +131,7 @@ async function updateTaskDueDate(projectId, taskId, isoDate) {
   })
 
   const res = await client.post(
-    `/project/${projectId}/task/${taskId}`,
+    `/task/${taskId}`,
     {
       dueDate: isoDate
     }
