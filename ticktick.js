@@ -104,7 +104,7 @@ async function addReminder(taskId, trigger) {
 async function getTask(projectId, taskId) {
   const client = createClient()
 
-  return client.post(
+  return client.get(
     `/project/${projectId}/task/${taskId}`
   ) 
 }
