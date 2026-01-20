@@ -63,12 +63,37 @@ laundry: async () => {
     })
   },
 
+//  feddog: async () => {
+//    await ticktick.completeTask(
+//      '5bc2b62fe35eaff6a67b9872',
+//      '69614646da9a8524e588ca1e'
+//    )
+//  },
+
   feddog: async () => {
-    await ticktick.completeTask(
-      '5bc2b62fe35eaff6a67b9872',
-      '69614646da9a8524e588ca1e'
-    )
-  },
+  const projectId = '5bc2b62fe35eaff6a67b9872'
+  const taskId = '69614646da9a8524e588ca1e'
+
+  // 1. Fetch the task
+  const task = await ticktick.getTask(projectId, taskId)
+
+  if (!task || !task.dueDate) return
+
+  // 2. Check if due today
+  const today = new Date()
+  const dueDate = new Date(task.dueDate)
+
+  const isDueToday =
+    dueDate.getFullYear() === today.getFullYear() &&
+    dueDate.getMonth() === today.getMonth() &&
+    dueDate.getDate() === today.getDate()
+
+  // 3. Only complete if due today
+  if (isDueToday) {
+    await ticktick.completeTask(projectId, taskId)
+  }
+},
+
 
   task: async (payload) => {
   const response = await ticktick.createTask({
@@ -105,14 +130,14 @@ laundry: async () => {
 },
 
 
-  amazon: async (payload) => {
-    return ticktick.createTask({
-      title: payload.title || 'Amazon Package',
-      description: payload.description || '',
-      dueDate: todayAt(19),
-      priority: 3
-    })
-  },
+//  amazon: async (payload) => {
+//    return ticktick.createTask({
+//      title: payload.title || 'Amazon Package',
+//     description: payload.description || '',
+//      dueDate: todayAt(19),
+//      priority: 3
+//    })
+//  },
 
 amazon: async () => {
   const response = await ticktick.createTask({
