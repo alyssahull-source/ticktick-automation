@@ -70,28 +70,21 @@ laundry: async () => {
 //    )
 //  },
 
-  feddog: async () => {
+feddog: async () => {
   const projectId = '5bc2b62fe35eaff6a67b9872'
   const taskId = '69614646da9a8524e588ca1e'
 
-  console.log('before')
-  const task = await ticktick.getTask(projectId, taskId)
-  console.log('after', task)
+  const { data: task } = await ticktick.getTask(projectId, taskId)
 
+  if (!task.dueDate) return
 
-  if (!task || !task.dueDate) return
+  // Extract YYYY-MM-DD in task's timezone
+  const taskDay = task.dueDate.slice(0, 10)
 
-  // 2. Check if due today
-  const today = new Date()
-  const dueDate = new Date(task.dueDate)
+  // Today's date in the same format
+  const today = new Date().toISOString().slice(0, 10)
 
-  const isDueToday =
-    dueDate.getFullYear() === today.getFullYear() &&
-    dueDate.getMonth() === today.getMonth() &&
-    dueDate.getDate() === today.getDate()
-
-  // 3. Only complete if due today
-  if (isDueToday) {
+  if (taskDay === today) {
     await ticktick.completeTask(projectId, taskId)
   }
 },
