@@ -101,6 +101,14 @@ async function addReminder(taskId, trigger) {
 }
 
 
+async function getTask(projectId, taskId) {
+  const client = createClient()
+
+  return client.post(
+    `/project/${projectId}/task/${taskId}`
+  ) 
+}
+
 async function completeTask(projectId, taskId) {
   const client = createClient()
 
@@ -168,6 +176,7 @@ module.exports = {
   createTask,
   completeTask,
   addReminder,
+  getTask,
   updateTaskContent,
   updateTaskDueDate,
   toTickTickDate,
