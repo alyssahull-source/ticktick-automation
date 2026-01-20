@@ -74,8 +74,10 @@ laundry: async () => {
   const projectId = '5bc2b62fe35eaff6a67b9872'
   const taskId = '69614646da9a8524e588ca1e'
 
-  // 1. Fetch the task
+  console.log('before')
   const task = await ticktick.getTask(projectId, taskId)
+  console.log('after', task)
+
 
   if (!task || !task.dueDate) return
 
